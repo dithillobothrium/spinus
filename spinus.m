@@ -1,6 +1,7 @@
 (* ::Package:: *)
 
-Import[StringJoin[NotebookDirectory[],"angular.m"]]
+<<angular`
+ 
 
 
 JState[j_]:={j,-1};
@@ -2066,6 +2067,7 @@ TimeStep_,
 MaxTime_,
 outEveryPS_,
 initNumState_:1,
+initState_:0,
 tol_:0.01
 ]:=Module[
 {
@@ -2088,7 +2090,7 @@ Parameters
 },
 adtol=tol/bsize//N;
 
-progressBar[Dynamic[done],100]
+progressBar[Dynamic[done],100];
 SetSystemOptions["CatchMachineUnderflow" -> False];
 
 If[TimeUnits=="FS",NormTime=1000];
@@ -2102,15 +2104,29 @@ Parameters=Map[Interpolation[Transpose[{TimeArr,#}]]&,ParValList];
 ParamsF[lt_]:=Map[#[lt]&,Parameters];
 HAM[lt_]:=GetHam[ham,ParamsF[lt]];
 
+
+
+
+
+(*Start wave func*)
+If[Dimensions[initState] != {}, 
+
+Print["starting state taken from input"];
+Sstart = initState;
+Print["qq"];
+, 
+Print["qw"];
+GetHam[-ham,ParValList[[1;;,1]]]
+(*else*)
 Print["Solving eigensystem for initial state..."];
 
 ES=Eigensystem[
 GetHam[-ham,ParValList[[1;;,1]]],
 initNumState,Method->{"Arnoldi","Criteria"->"RealPart","MaxIterations"->1000000,"Tolerance"->10^-8}];
 
-
-(*Start wave func*)
 Sstart=ES[[2,initNumState]];
+];
+
 
 
 
@@ -2168,7 +2184,6 @@ dt,
 N[(-I-\[Lambda])/(PlanckNorm(1.+\[Lambda]^2))],
 N[(\[Lambda])/(PlanckNorm(1.+\[Lambda]^2))]
 ]; 
-
 
 norm=Norm[Sn];
 
