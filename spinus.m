@@ -101,10 +101,10 @@ Return[res];
 
 
 
-Avg[op_,wf_]:=Conjugate[wf].op.wf;
+Avg[op_,wf_]:=Conjugate[wf] . op . wf;
 
 
-ss[s_]:=2s+1;
+ss[snum_]:=2snum+1;
 
 
 TensorMatrix[Tens_,Basis_,initJ_]:=Module[
@@ -119,7 +119,7 @@ Return[0];
 None
 ];
 
-rme=ReducedME[initJ,Tens[[1]]];
+rme=VonNeumanEntropyME[initJ,Tens[[1]]];
 confSize=Dimensions[initJ][[1]];
 Tk=Tens[[2,-1]];
 Tq=Tens[[3]];
@@ -136,7 +136,7 @@ Abs[Sr-Tk]<=Sl&&Sl<=Sr+Tk&&mr+Tq==ml,
 
 (-1)^(2 Tk)/Sqrt[2Sl+1] ClebschGordan[{Sr,mr},{Tk,Tq},{Sl,ml}]*
 rme*\!\(
-\*UnderoverscriptBox[\(\[Product]\), \(k = 1\), \(confSize - 1\)]\(\[Sqrt]\((ss[Tens[\([2, k + 1]\)]] ss[left[\([k + 1]\)]] ss[right[\([k + 1]\)]])\)*\[IndentingNewLine]NineJSymbol[{Tens[\([2, k]\)], Tens[\([1, k + 1]\)], Tens[\([2, k + 1]\)]}, \[IndentingNewLine]{left[\([k]\)], initJ[\([k + 1]\)], left[\([k + 1]\)]}, \[IndentingNewLine]{right[\([k]\)], initJ[\([k + 1]\)], right[\([k + 1]\)]}]\)\),
+\*UnderoverscriptBox[\(\[Product]\), \(k = 1\), \(confSize - 1\)]\(\[Sqrt]\((ss[Tens[\([2, k + 1]\)]] ss[left[\([k + 1]\)]] ss[right[\([k + 1]\)]])\)*NineJSymbol[{Tens[\([2, k]\)], Tens[\([1, k + 1]\)], Tens[\([2, k + 1]\)]}, \.01{left[\([k]\)], initJ[\([k + 1]\)], left[\([k + 1]\)]}, \.01{right[\([k]\)], initJ[\([k + 1]\)], right[\([k + 1]\)]}]\)\),
 0
 ]
 ,{i,1,size},{j,1,size}]];
@@ -375,14 +375,14 @@ t+=dt;
 Conditions=MapThread[#1->#2&,{ParNames,ParValList[[1;;,i]]}];
 Hnum=HamMatrix/.Conditions;
 
-Sn=S+(dt/(I (1+\[Lambda]^2)PlanckNorm) (Hnum-I \[Lambda] (Hnum - IdentityMatrix[bsize] Conjugate[S].Hnum.S)).S);
+Sn=S+(dt/(I (1+\[Lambda]^2)PlanckNorm) (Hnum-I \[Lambda] (Hnum - IdentityMatrix[bsize] Conjugate[S] . Hnum . S)) . S);
 
 
-AppendTo[Sx,Table[Conjugate[Sn].Sops[[i,1]].Sn//N,{i,1,n}]];
-AppendTo[Sy,Table[Conjugate[Sn].Sops[[i,2]].Sn//N,{i,1,n}]];
-AppendTo[Sz,Table[Conjugate[Sn].Sops[[i,3]].Sn//N,{i,1,n}]];
+AppendTo[Sx,Table[Conjugate[Sn] . Sops[[i,1]] . Sn//N,{i,1,n}]];
+AppendTo[Sy,Table[Conjugate[Sn] . Sops[[i,2]] . Sn//N,{i,1,n}]];
+AppendTo[Sz,Table[Conjugate[Sn] . Sops[[i,3]] . Sn//N,{i,1,n}]];
 
-AppendTo[En,Conjugate[Sn].Hnum.Sn];
+AppendTo[En,Conjugate[Sn] . Hnum . Sn];
 AppendTo[T,t];
 AppendTo[Bar,ParValList[[1;;,i]]];
 
@@ -420,7 +420,7 @@ Return[Result];
 ]
 
 
-Commute[T1_,T2_]:=T1.T2-T2.T1;
+Commute[T1_,T2_]:=T1 . T2-T2 . T1;
 
 
 SpinDynamicDM[
@@ -522,11 +522,11 @@ comm=Commute[dm,Hnum];
 dmn=dm+dt/( (1+\[Lambda]^2)PlanckNorm) (I comm-\[Lambda] Commute[dm,comm]);
 
 
-AppendTo[Sx,Table[Tr[dmn.Sops[[i,1]]]//Re,{i,1,n}]];
-AppendTo[Sy,Table[Tr[dmn.Sops[[i,2]]]//Re,{i,1,n}]];
-AppendTo[Sz,Table[Tr[dmn.Sops[[i,3]]]//Re,{i,1,n}]];
+AppendTo[Sx,Table[Tr[dmn . Sops[[i,1]]]//Re,{i,1,n}]];
+AppendTo[Sy,Table[Tr[dmn . Sops[[i,2]]]//Re,{i,1,n}]];
+AppendTo[Sz,Table[Tr[dmn . Sops[[i,3]]]//Re,{i,1,n}]];
 
-AppendTo[En,Tr[dmn.Hnum]];
+AppendTo[En,Tr[dmn . Hnum]];
 AppendTo[T,t];
 AppendTo[Bar,ParValList[[1;;,i]]];
 
@@ -600,7 +600,7 @@ Clear[Conditions];
 
 SpinWF[t_]:=Table[Subscript[SWFC, i][t],{i,1,bsize}];
 
-eq=D[SpinWF[t],t]==1/(I (1+\[Lambda]^2)) (HamMatrix-I \[Lambda] (HamMatrix - IdentityMatrix[bsize] Conjugate[SpinWF[t]].HamMatrix.SpinWF[t])).SpinWF[t];
+eq=D[SpinWF[t],t]==1/(I (1+\[Lambda]^2)) (HamMatrix-I \[Lambda] (HamMatrix - IdentityMatrix[bsize] Conjugate[SpinWF[t]] . HamMatrix . SpinWF[t])) . SpinWF[t];
 
 Result={
 eq,
@@ -684,7 +684,7 @@ Print["Dynamic started..."];
 (*Damping constant*)
 \[Lambda]=DampConst;
 
-eq=D[SpinWF[t],t]==1/(I (1+\[Lambda]^2)) (HamMatrix-I \[Lambda] (HamMatrix - IdentityMatrix[bsize] Conjugate[SpinWF[t]].HamMatrix.SpinWF[t])).SpinWF[t];
+eq=D[SpinWF[t],t]==1/(I (1+\[Lambda]^2)) (HamMatrix-I \[Lambda] (HamMatrix - IdentityMatrix[bsize] Conjugate[SpinWF[t]] . HamMatrix . SpinWF[t])) . SpinWF[t];
 
 sys=eq/.Conditions[t];(*SpinWF'[t]==1/(I (1+\[Lambda]^2)PlanckNorm)(Hnumf[t]-I \[Lambda] (Hnumf[t] - IdentityMatrix[bsize] Conjugate[SpinWF[t]].Hnumf[t].SpinWF[t])).SpinWF[t];*)
 
@@ -700,11 +700,11 @@ Method->{"EquationSimplification"->"Solve"}
 
 WF=Table[(SpinWF[t]/.slv)[[1]],{t,0,MaxTime,dt}];
 
-En=MapThread[Conjugate[#1].Hnumf[#2].#1&,{WF,TimeArr}];
+En=MapThread[Conjugate[#1] . Hnumf[#2] . #1&,{WF,TimeArr}];
 
-Sx=Map[Table[Conjugate[#].Sops[[i,1]].#//N,{i,1,n}]&,WF];
-Sy=Map[Table[Conjugate[#].Sops[[i,2]].#//N,{i,1,n}]&,WF];
-Sz=Map[Table[Conjugate[#].Sops[[i,3]].#//N,{i,1,n}]&,WF];
+Sx=Map[Table[Conjugate[#] . Sops[[i,1]] . #//N,{i,1,n}]&,WF];
+Sy=Map[Table[Conjugate[#] . Sops[[i,2]] . #//N,{i,1,n}]&,WF];
+Sz=Map[Table[Conjugate[#] . Sops[[i,3]] . #//N,{i,1,n}]&,WF];
 Sall={Sx,Sy,Sz};
 
 
@@ -919,7 +919,7 @@ Ns},
 Sall=Table[
 Parallelize[
 Table[
-Conjugate[Psi[[k]]].Sops[[j,i]].Psi[[k]]
+Conjugate[Psi[[k]]] . Sops[[j,i]] . Psi[[k]]
 ,{k,1,Dimensions[Psi][[1]]}]
 ]
 ,{i,1,3},{j,1,n}]//Re;
@@ -948,7 +948,7 @@ avgs
 avgs=Table[
 Parallelize[
 Table[
-Conjugate[Psi[[i]]].op.Psi[[i]]
+Conjugate[Psi[[i]]] . op . Psi[[i]]
 ,{i,1,Dimensions[Psi][[1]]}]
 ]
 ,{op,operators}]//Re;
@@ -1489,7 +1489,7 @@ evl=es[[1]];
 evc=es[[2]];
 
 TotSOP=Sum[sop,{sop,Sops}];
-TotSqSOp=Sum[comp.comp,{comp,TotSOP}];
+TotSqSOp=Sum[comp . comp,{comp,TotSOP}];
 
 est=Transpose[es];
 
@@ -1499,13 +1499,13 @@ ests=Map[
 
 EnTotSpin=
 Map[
- {Conjugate[#[[2]]].TotSqSOp.#[[2]]//Re,#[[1]]}
+ {Conjugate[#[[2]]] . TotSqSOp . #[[2]]//Re,#[[1]]}
 &,ests];
 
 EnSpins=Table[
 Table[
 Map[
- {Conjugate[#[[2]]].Sops[[i,j]].#[[2]]//Re,#[[1]]}
+ {Conjugate[#[[2]]] . Sops[[i,j]] . #[[2]]//Re,#[[1]]}
 &,ests],
 {i,1,n}],
 {j,1,3}];
@@ -1555,7 +1555,7 @@ evl=es[[1]];
 evc=es[[2]];
 
 TotSOP=Sum[sop,{sop,Sops}];
-TotSqSOp=Sum[comp.comp,{comp,TotSOP}];
+TotSqSOp=Sum[comp . comp,{comp,TotSOP}];
 
 est=Transpose[{-evl,evc}];
 
@@ -1565,13 +1565,13 @@ ests=Map[
 
 EnTotSpin=
 Map[
- {Conjugate[#[[2]]].TotSqSOp.#[[2]]//Re,#[[1]]}
+ {Conjugate[#[[2]]] . TotSqSOp . #[[2]]//Re,#[[1]]}
 &,ests];
 
 EnSpins=Table[
 Table[
 Map[
- {Conjugate[#[[2]]].Sops[[i,j]].#[[2]]//Re,#[[1]]}
+ {Conjugate[#[[2]]] . Sops[[i,j]] . #[[2]]//Re,#[[1]]}
 &,ests],
 {i,1,n}],
 {j,1,3}];
@@ -1591,22 +1591,23 @@ EnSpins
 
 
 
-SpectrumLSX[conf_,numStates_]:=
+SpectrumLSX[Ham_,Sops_,numStates_]:=
 Module[
 {},
 
-Sops=conf[[4]];
-Ham=conf[[3]];
-
-es=Eigensystem[
+es=If[Dimensions[Ham][[1]]>=200,
+Eigensystem[
 -Ham,
-numStates,Method->{"Arnoldi","Criteria"->"RealPart","MaxIterations"->1000000,"Tolerance"->10^-8}];
+numStates,Method->{"Arnoldi","Criteria"->"RealPart","MaxIterations"->10000000,"Tolerance"->10^-11}]
+,
+Eigensystem[-Ham]
+];
 
 evl=es[[1]];
 evc=Orthogonalize[es[[2]]];
 
 TotSOP=Sum[sop,{sop,Sops}];
-TotSqSOp=Sum[comp.comp,{comp,TotSOP}];
+TotSqSOp=Sum[comp . comp,{comp,TotSOP}];
 
 est=Transpose[{-evl,evc}];
 
@@ -1616,22 +1617,24 @@ ests=Map[
 
 EnTotSpin=
 Map[
- {Conjugate[#[[2]]].TotSqSOp.#[[2]]//Re,#[[1]]}
+ {Conjugate[#[[2]]] . TotSqSOp . #[[2]]//Re,#[[1]]}
 &,ests];
+
+n=Dimensions[Sops][[1]];
 
 EnSpins=Table[
 Table[
 Map[
- {Conjugate[#[[2]]].Sops[[i,j]].#[[2]]//Re,#[[1]]}
-&,ests],
+ {Conjugate[#[[2]]] . Sops[[i,j]] . #[[2]]//Re,#[[1]]}
+&,ests[[1;;numStates]]],
 {i,1,n}],
 {j,1,3}];
 
 
 Return[
 {
-"Eigenvals"->ests[[1;;,1]],
-"Eigenvecs"->ests[[1;;,2]],
+"Eigenvals"->ests[[1;;numStates,1]],
+"Eigenvecs"->ests[[1;;numStates,2]],
 "TotSpin"->EnTotSpin,
 "Spins"->EnSpins
 }
@@ -1743,7 +1746,14 @@ KroneckerProductUEx[singleDMs,Dot]
 CalcDMLS[dm_,wf_]:=
 Module[
 {},
-Return[Table[Conjugate[wf].comp.wf,{rc1,dm},{comp,rc1}]];
+Return[Table[Conjugate[wf] . comp . wf,{rc1,dm},{comp,rc1}]];
+]
+
+
+calcRDMLS[RDMop_,rhoState_]:=
+Module[
+{},
+Return[Table[Tr[rhoState . comp],{rc1,RDMop},{comp,rc1}]];
 ]
 
 
@@ -1780,7 +1790,7 @@ ProjecOp[{S_,i_,j_}]:=
 Module[
 {mat},
 mat=SparseArray[Table[0,{2 S+1},{2S+1}]];
-mat[[i,j]]=1;
+mat[[j,i]]=1;
 Return[mat];
 ]
 
@@ -1806,6 +1816,10 @@ opm=KroneckerProduct[opm,Ident [slist[[i]]]];
 ];
 Return[opm];
 ];
+
+
+
+
 
 
 SpinOpLS[slist_,sn_]:=Table[ProdOp[slist,{{sn,i}},False],{i,3}];
@@ -1839,16 +1853,16 @@ Return[
 AnisLS[slist_,sn_,{Dc_,Ec_}]:=
 ( 
 sop=SpinOpLS[slist,sn];
-Return[Dc (sop[[3]].sop[[3]]) + Ec (sop[[1]].sop[[1]] - sop[[2]].sop[[2]])];
+Return[Dc (sop[[3]] . sop[[3]]) + Ec (sop[[1]] . sop[[1]] - sop[[2]] . sop[[2]])];
 )
 
 
 
 
 
-MatrixCross[s1_,s2_]:={s1[[2]].s2[[3]]-s1[[3]].s2[[2]], 
-s1[[3]].s2[[1]]-s1[[1]].s2[[3]],
-s1[[1]].s2[[2]]-s1[[2]].s2[[1]]};
+MatrixCross[s1_,s2_]:={s1[[2]] . s2[[3]]-s1[[3]] . s2[[2]], 
+s1[[3]] . s2[[1]]-s1[[1]] . s2[[3]],
+s1[[1]] . s2[[2]]-s1[[2]] . s2[[1]]};
 
 
 DzMorLS[slist_,{s1_,s2_},D_]:=
@@ -1866,8 +1880,8 @@ ham[[1]]+Sum[par[[i-1]]*ham[[i]],{i,2,Dimensions[ham][[1]]}]
 
 RHS[eigv_,ham_,a_,b_]:=
 (
-en=Conjugate[eigv].ham.eigv//Re;
-Return[a ham.eigv+en b eigv];
+en=Conjugate[eigv] . ham . eigv//Re;
+Return[a ham . eigv+en b eigv];
 )
 
 
@@ -1885,6 +1899,15 @@ k1=RHS[eigv,HAM[t],a,b];
 k2=RHS[eigv+k1 *step*0.5,HAM[t+0.5*step],a,b];
 k3=RHS[eigv+k2 *step*0.5,HAM[t+0.5*step],a,b];
 k4=RHS[eigv+k3 *step,HAM[t+step],a,b];
+Return[1./6.(k1+2.0 * k2+2.0 * k3 + k4)];
+]
+
+
+RungeKuttaStepGen[Rhsfunc_,data_,step_]:=Module[{k1,k2,k3,k4},
+k1=Rhsfunc[data]; 
+k2=Rhsfunc[data+k1*step/2.0];
+k3=Rhsfunc[data+k2*step/2.0];
+k4=Rhsfunc[data+k3*step];
 Return[1./6.(k1+2.0 * k2+2.0 * k3 + k4)];
 ]
 
@@ -2008,11 +2031,11 @@ S=S;(*/Norm[S]*)
 
 If[saveCount==saveEvery,
 saveCount=0;
-en=Re[Conjugate[S].Hnum.S];
+en=Re[Conjugate[S] . Hnum . S];
 
-AppendTo[Sx,Table[Conjugate[Sn].Sops[[j,1]].Sn//N,{j,1,n}]];
-AppendTo[Sy,Table[Conjugate[Sn].Sops[[j,2]].Sn//N,{j,1,n}]];
-AppendTo[Sz,Table[Conjugate[Sn].Sops[[j,3]].Sn//N,{j,1,n}]];
+AppendTo[Sx,Table[Conjugate[Sn] . Sops[[j,1]] . Sn//N,{j,1,n}]];
+AppendTo[Sy,Table[Conjugate[Sn] . Sops[[j,2]] . Sn//N,{j,1,n}]];
+AppendTo[Sz,Table[Conjugate[Sn] . Sops[[j,3]] . Sn//N,{j,1,n}]];
 
 AppendTo[En,en];
 AppendTo[T,t];
@@ -2221,7 +2244,7 @@ t+=dt;
 If[saveCount>=outEveryPS,
 saveCount=0;
 
-en=Re[Conjugate[S].HAM[t].S];
+en=Re[Conjugate[S] . HAM[t] . S];
 
 AppendTo[En,en];
 AppendTo[T,t];
@@ -2340,7 +2363,7 @@ ParamsF[lt_]:=Map[#[lt]&,Parameters];
 
 Clear[SWFC];
 SpinWF[lt_]:=Table[Subscript[SWFC, i][lt],{i,1,bsize}];
-Energy[lt_]:=Conjugate[SpinWF[lt]].Hnum.SpinWF[lt];
+Energy[lt_]:=Conjugate[SpinWF[lt]] . Hnum . SpinWF[lt];
 HnumF[lt_]:=GetHam[ham,ParamsF[lt]];
 eq=D[SpinWF[lt],lt]==RHS[SpinWF[lt],HnumF[lt],N[(-I-\[Lambda])/(PlanckNorm(1.+\[Lambda]^2))],N[\[Lambda]/(PlanckNorm(1.+\[Lambda]^2))]];
 
@@ -2646,3 +2669,128 @@ Print["Done!"];
 Return[Result];
 
 ]
+
+
+
+Pauli[nq_]:=
+Module[{pp1,pp},
+pp1={({
+ {1, 0},
+ {0, 1}
+}),({
+ {0, 1},
+ {1, 0}
+}),I({
+ {0, -1},
+ {1, 0}
+}),({
+ {1, 0},
+ {0, -1}
+})};
+pp=pp1;
+For[i=1,i<nq,i++,
+pp=Flatten[Table[KroneckerProduct[p1,p2],{p1,pp},{p2,pp1}],1];
+];
+Return[pp];
+];
+
+
+qChanPTM[f_,SS_]:=
+Module[{n,ptm},
+n=Dimensions[SS[[1]]][[1]];
+ptm=1/n Table[Tr[s1 . f[s2 ]],{s1,SS},{s2,SS}];
+Return[ptm];
+];
+
+
+
+qChanPTMnq[f_,nq_]:=
+Module[{SS},
+SS=Pauli[nq];
+Return[qChanPTM[f,SS]];
+];
+
+
+
+ptm2chi[S_,ptm_]:=
+Module[{n,dim,Sigma,ptmf,conv,chi},
+n=Dimensions[S[[1]]][[1]];
+dim=Dimensions[S][[1]];
+Sigma=1/n Table[
+Tr[
+SI . Si . SJ . Sj
+],
+{SI,S},{SJ,S},{Si,S},{Sj,S}];
+ptmf=Flatten[ptm];
+conv=Flatten[Sigma,{{1,2},{3,4}}];
+chi=ArrayReshape[Inverse[conv] . ptmf,{dim,dim}];
+Return[chi];
+];
+
+
+
+ptm2chinq[ptm_,nq_]:=
+Module[
+{S},
+S=Pauli[nq];
+Return[ptm2chi[S,ptm]];
+];
+
+
+
+qChan2Kraus[f_,nq_]:=
+Module[{chi,mixES,mixESn,err},
+chi=ptm2chinq[qChanPTMnq[f,nq],nq];
+mixES=Eigensystem[chi];
+err:=0;
+Table[
+If[Re[ev]<0,err+=Abs[ev], If[Im[ev]!=0,err+=Abs[Im[ev]] ]];
+,{ev,mixES[[1]]}];
+Print["Error of converting channel to CPTP channel: ",err];
+mixESn=Map[{#[[1]],Normalize[#[[2]]]}&,Transpose[mixES]];
+Return[Table[Sqrt[Abs[es[[1]]]] Sum[pes[[1]]*pes[[2]],{pes,Transpose[{Pauli[nq],es[[2]]}]}],{es,mixESn}]];
+];
+
+
+
+qChan2KrausEx[f_,nq_,SS_]:=
+Module[{chi,mixES,mixESn,err},
+chi=ptm2chinq[qChanPTMnq[f,nq],nq];
+mixES=Eigensystem[chi];
+err:=0;
+Table[
+If[Re[ev]<0,err+=Abs[ev], If[Im[ev]!=0,err+=Abs[Im[ev]] ]];
+,{ev,mixES[[1]]}];
+Print["Error of converting channel to CPTP channel: ",err];
+mixESn=Map[{#[[1]],Normalize[#[[2]]]}&,Transpose[mixES]];
+Return[Table[Sqrt[Abs[es[[1]]]] Sum[pes[[1]]*pes[[2]],{pes,Transpose[{SS,es[[2]]}]}],{es,mixESn}]];
+];
+
+
+applyKraus[rho_, krauses_]:=Sum[k . rho . ConjugateTranspose[k],{k,krauses}];
+
+
+
+Comm[op1_,op2_]:=op1 . op2-op2 . op1;
+
+
+
+MakeOpMatrix1[op_,numParticles_,pos_]:=
+Module[{dim,ops},
+dim=Dimensions[op][[1]];
+ops=Table[IdentityMatrix[dim],numParticles];
+ops[[pos]]=op;
+Return[KroneckerProductEx[ops]];
+]
+
+
+
+calcRDMLS[RDMop_,rhoState_]:=
+Module[
+{},
+Return[Table[Tr[rhoState . comp],{rc1,RDMop},{comp,rc1}]];
+]
+
+
+(* ::Input:: *)
+(**)
